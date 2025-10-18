@@ -1,0 +1,9 @@
+/* src/styles.css */
+.crt-shadow { box-shadow: 0 20px 60px rgba(0,0,0,.45); }
+.scanlines::after { content: ""; pointer-events:none; position:absolute; inset:0; background-image: repeating-linear-gradient(to bottom, rgba(0,0,0,.06), rgba(0,0,0,.06) 1px, transparent 1px, transparent 3px); mix-blend-mode: multiply; }
+.parallax { perspective: 800px; transform-style: preserve-3d; }
+.win-scroll { scrollbar-width: thin; }
+/* Truncate taskbar app titles gracefully */
+.taskbtn span { white-space: nowrap; }
+.taskbtn .button { padding-top: 0; padding-bottom: 0; height: 20px; }
+
