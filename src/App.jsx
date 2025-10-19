@@ -1,6 +1,6 @@
 // src/App.jsx
 import React from "react";
-import { useScreenType } from "./hooks/useScreenType.jsx";
+import useScreenType from "./hooks/useScreenType.jsx";
 import DesktopExperience from "./components/experiences/DesktopExperience";
 import MobileExperience from "./components/experiences/MobileExperience";
 

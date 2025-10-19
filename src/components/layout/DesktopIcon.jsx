@@ -1,5 +1,11 @@
 // Desktop Icons
-<div className="absolute z-10 top-4 left-4 right-4 bottom-12 grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,80px)] gap-6 content-start pointer-events-auto">
+<div
+	// 👇 ADD 'hidden' to hide by default, and 'sm:grid' to show on small screens and up
+	className="hidden sm:grid 
+               absolute z-10 top-4 left-4 right-4 bottom-12 
+               grid-cols-[repeat(auto-fill,80px)] gap-6 content-start pointer-events-auto"
+>
+	{" "}
 	{icons.map((ic) => (
 		<div
 			key={ic.id}

@@ -1,73 +1,125 @@
-// src/experiences/MobileExperience.jsx
 import React, { useState, useRef } from "react";
-import StartMenu from "../StartMenu";
-import Taskbar from "../Taskbar";
-import WindowFrame from "../WindowFrame";
-// import { useWindowManagement } from '../hooks/useWindowManagement'; // Placeholder for window logic
-// import { getWindowComponent } from '../data/windows';
+import StartMenu from "../layout/StartMenu";
+import Taskbar from "../layout/Taskbar";
+import WindowFrame from "../layout/WindowFrame";
+// ------------------------------------------------------------------
+// ⚠️ NEW APP IMPORTS: Use the new, richer components
+// ------------------------------------------------------------------
+import MyComputerApp from "../apps/MyComputerApp";
+import DocumentsApp from "../apps/DocumentsApp";
+import TerminalApp from "../apps/TerminalApp";
+import AboutApp from "../apps/AboutApp"; // Assuming you've created this file from the last response
+// ------------------------------------------------------------------
 
-// Dummy Data and Components (REPLACE WITH YOUR ACTUAL IMPORTS)
-const getWindowComponent = (id) => {
-	// You need to import and use your actual window components here
-	return <div className="text-sm">Content for {id}</div>;
-};
-const MobileCenteredPos = (window) => {
-	const defaultWidth = window.innerWidth * 0.9;
-	const defaultHeight = window.innerHeight * 0.6;
-	return {
-		x: (window.innerWidth - defaultWidth) / 2,
-		y: (window.innerHeight - 48 - defaultHeight) / 2, // Centered above Taskbar
-	};
-};
-const MOBILE_POS = MobileCenteredPos(window);
-const MOBILE_SIZE = {
-	width: window.innerWidth * 0.9,
-	height: window.innerHeight * 0.6,
-};
-// END OF DUMMY DATA
+import useWindowManagement from "../../hooks/useWindowManagment"; // Adjust path as needed
 
-export default function MobileExperience() {
+// Desktop Items - Remains the same
+const DESKTOP_ITEMS = [
+	{
+		id: "projects",
+		title: "My Computer",
+		icon: "/icons/my-computer.png",
+		action: "projects",
+	},
+	{
+		id: "resume",
+		title: "Documents",
+		icon: "/icons/documents.png",
+		action: "resume",
+	},
+	{
+		id: "skills",
+		title: "Skills Terminal",
+		icon: "/icons/run.png",
+		action: "skills",
+	},
+	{ id: "about", title: "About Me", icon: "/icons/about.png", action: "about" },
+];
+
+// Map the action ID to the correct Component for cleaner rendering logic
+const AppComponents = {
+	projects: MyComputerApp,
+	resume: DocumentsApp,
+	skills: TerminalApp,
+	about: AboutApp,
+};
+
+// Removed getWindowComponent function and replaced it with direct component usage
+// in the render loop for cleaner code.
+
+// Desktop Icon Component - Remains the same
+const DesktopIcon = ({ item, onOpen }) => (
+	<div
+		className="hidden  flex-col items-center w-20 p-1 cursor-pointer hover:bg-black/20"
+		onDoubleClick={() => onOpen(item.action)}
+	>
+		<img src={item.icon} alt={item.title} className="w-8 h-8" />
+		<span className="text-white text-xs text-center mt-1 select-none font-sans">
+			{item.title}
+		</span>
+	</div>
+);
+
+// Default Desktop Window Dimensions - Remains the same
+const INITIAL_POS = { x: 80, y: 60 };
+const INITIAL_SIZE = { width: 620, height: 420 };
+
+export default function DesktopExperience() {
 	const desktopRef = useRef(null);
 	const [isStartMenuOpen, setIsStartMenuOpen] = useState(false);
 
-	// Placeholder for your window state management
-	const { wins, onOpen, onFocus, onClose, onMinimize, onToggle } = {
-		wins: [], // Replace with actual state
-		onOpen: (id) => console.log("Open window:", id), // Implement in your logic
-		onFocus: () => {},
-		onClose: () => {},
-		onMinimize: () => {},
-		onToggle: () => {},
-	};
+	// Use the window management hook
+	const { wins, onOpen, onFocus, onClose, onMinimize, onToggle } =
+		useWindowManagement();
 
 	return (
 		<div
 			ref={desktopRef}
-			// Background and overall desktop look
-			className="w-screen h-screen bg-teal-700 relative overflow-hidden font-sans"
+			className="w-screen h-screen bg-cover relative overflow-hidden font-sans"
+			style={{ backgroundImage: "url(/wallpaper.png)" }}
 		>
-			{/* Desktop Icons are intentionally OMITTED on mobile */}
+			{/* Desktop Icons - Visible on Desktop/Tablet */}
+			<div className="absolute top-2 left-2 flex flex-col gap-4">
+				{DESKTOP_ITEMS.map((item) => (
+					<DesktopIcon
+						key={item.id}
+						item={item}
+						onOpen={() => onOpen(item.action, INITIAL_POS, INITIAL_SIZE)}
+					/>
+				))}
+			</div>
 
 			{/* Render Open Windows */}
-			{wins.map((win) => (
-				<WindowFrame
-					key={win.id}
-					spec={{ ...win, defaultPos: MOBILE_POS, defaultSize: MOBILE_SIZE }}
-					containerQuery={desktopRef.current}
-					onFocus={() => onFocus(win.id)}
-					onClose={() => onClose(win.id)}
-					onMinimize={() => onMinimize(win.id)}
-				>
-					{getWindowComponent(win.id)}
-				</WindowFrame>
-			))}
+			{wins.map((win) => {
+				// 1. Find the component based on the window ID
+				const WindowContent = AppComponents[win.id];
 
-			{/* Start Menu (Positioned to open just above the taskbar) */}
+				// 2. Safely return if the component is not found
+				if (!WindowContent) return null;
+
+				// 3. Render the WindowFrame and the content component inside it
+				return (
+					<WindowFrame
+						key={win.id}
+						spec={win}
+						containerQuery={desktopRef.current}
+						onFocus={() => onFocus(win.id)}
+						onClose={() => onClose(win.id)}
+						onMinimize={() => onMinimize(win.id)}
+					>
+						{/* Render the specific content component */}
+						<WindowContent />
+					</WindowFrame>
+				);
+			})}
+
+			{/* Start Menu */}
 			<StartMenu
 				isOpen={isStartMenuOpen}
 				onClose={() => setIsStartMenuOpen(false)}
-				// All new windows are forced to the mobile position/size for touch comfort
-				onOpen={(id) => onOpen(id, MOBILE_POS, MOBILE_SIZE)}
+				// Use the desktop item actions for the Start Menu
+				menuItems={DESKTOP_ITEMS}
+				onOpen={(id) => onOpen(id, INITIAL_POS, INITIAL_SIZE)}
 			/>
 
 			{/* Taskbar */}

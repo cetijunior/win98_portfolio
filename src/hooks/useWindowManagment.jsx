@@ -2,8 +2,10 @@
 import { useState } from "react";
 
 // Define the static list of window types available to open
+// NOTE: I've added 'projects-list' here so it can be managed by the hook
 const WINDOW_SPECS = {
 	projects: { title: "My Computer" },
+	"projects-list": { title: "Projects" }, // Added new window type
 	resume: { title: "Documents" },
 	skills: { title: "Skills Terminal" },
 	about: { title: "About Me" },
@@ -29,24 +31,19 @@ export default function useWindowManagement() {
 	 */
 	const onFocus = (id) => {
 		const newZ = getNextZIndex();
-		setOpenWindows(
-			(prev) =>
-				prev
-					.map((win) => {
-						if (win.id === id) {
-							return { ...win, z: newZ, minimized: false };
-						}
-						return win;
-					})
-					.sort((a, b) => a.z - b.z) // Keep the array sorted by Z-index for reliable rendering order
+		setOpenWindows((prev) =>
+			prev.map((win) => {
+				if (win.id === id) {
+					// Update Z-index and ensure it's not minimized
+					return { ...win, z: newZ, minimized: false };
+				}
+				return win;
+			})
 		);
 	};
 
 	/**
 	 * Opens a new window or focuses an existing one.
-	 * @param {string} id - The unique action ID from the Start Menu.
-	 * @param {object} defaultPos - { x, y } coordinates (screen-size dependent).
-	 * @param {object} defaultSize - { width, height } dimensions (screen-size dependent).
 	 */
 	const onOpen = (id, defaultPos, defaultSize) => {
 		const spec = WINDOW_SPECS[id];
@@ -63,8 +60,9 @@ export default function useWindowManagement() {
 				title: spec.title,
 				z: newZ,
 				minimized: false,
-				defaultPos,
-				defaultSize,
+				// 🚀 NEW: Store the initial position/size directly in the window state
+				position: defaultPos,
+				size: defaultSize,
 			};
 
 			setOpenWindows((prev) => [...prev, newWindow]);
@@ -72,8 +70,27 @@ export default function useWindowManagement() {
 	};
 
 	/**
+	 * 🚀 NEW: Updates the window's position or size after a drag or resize operation.
+	 * This moves the position state logic from WindowFrame to the centralized hook.
+	 */
+	const onDragResizeStop = (id, newPosition, newSize) => {
+		setOpenWindows((prev) =>
+			prev.map((win) => {
+				if (win.id === id) {
+					return {
+						...win,
+						// Update position and size based on what's provided
+						position: newPosition || win.position,
+						size: newSize || win.size,
+					};
+				}
+				return win;
+			})
+		);
+	};
+
+	/**
 	 * Closes a window and removes it from the state.
-	 * @param {string} id - The ID of the window to close.
 	 */
 	const onClose = (id) => {
 		setOpenWindows((prev) => prev.filter((win) => win.id !== id));
@@ -81,7 +98,6 @@ export default function useWindowManagement() {
 
 	/**
 	 * Minimizes a window, hiding it from the desktop but keeping it in the taskbar.
-	 * @param {string} id - The ID of the window to minimize.
 	 */
 	const onMinimize = (id) => {
 		setOpenWindows((prev) =>
@@ -91,16 +107,26 @@ export default function useWindowManagement() {
 
 	/**
 	 * Toggles a window between focused/restored and minimized states. Used by the taskbar button.
-	 * @param {string} id - The ID of the window to toggle.
 	 */
 	const onToggle = (id) => {
-		const targetWin = openWindows.find((win) => win.id === id);
+		setOpenWindows((prev) => {
+			const targetWin = prev.find((win) => win.id === id);
 
-		if (targetWin.minimized) {
-			onFocus(id); // Restore and focus
-		} else {
-			onMinimize(id); // Minimize
-		}
+			if (!targetWin) return prev;
+
+			if (targetWin.minimized) {
+				// Restore and focus (set new Z-index and minimized: false)
+				const newZ = getNextZIndex();
+				return prev.map((win) =>
+					win.id === id ? { ...win, z: newZ, minimized: false } : win
+				);
+			} else {
+				// Minimize
+				return prev.map((win) =>
+					win.id === id ? { ...win, minimized: true } : win
+				);
+			}
+		});
 	};
 
 	return {
@@ -110,5 +136,7 @@ export default function useWindowManagement() {
 		onClose,
 		onMinimize,
 		onToggle,
+		// 🚀 NEW: Export the new update handler
+		onDragResizeStop,
 	};
 }

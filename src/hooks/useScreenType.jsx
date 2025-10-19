@@ -1,10 +1,10 @@
-// src/hooks/useScreenType.js
+// src/hooks/useScreenType.js (No change needed)
 import { useState, useEffect } from "react";
 
 // Tailwind's default 'sm' breakpoint for mobile/desktop distinction
 const MOBILE_BREAKPOINT = 640;
 
-export const useScreenType = () => {
+const useScreenType = () => {
 	const [isMobile, setIsMobile] = useState(
 		window.innerWidth < MOBILE_BREAKPOINT
 	);
@@ -20,3 +20,5 @@ export const useScreenType = () => {
 
 	return { isMobile, isDesktop: !isMobile };
 };
+
+export default useScreenType;
