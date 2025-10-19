@@ -5,10 +5,18 @@ export default function StartMenu({ isOpen, onClose, onOpen }) {
 	if (!isOpen) return null;
 
 	const menuItems = [
-		{ label: "My Computer", icon: "💾", action: "projects" },
-		{ label: "Documents", icon: "📄", action: "resume" },
-		{ label: "Skills Terminal", icon: "⚙️", action: "skills" },
-		{ label: "About Me", icon: "ℹ️", action: "about" },
+		{
+			label: "My Computer",
+			iconPath: "/icons/my-computer.png",
+			action: "projects",
+		},
+		{ label: "Documents", iconPath: "/icons/documents.png", action: "resume" },
+		{
+			label: "Skills Terminal",
+			iconPath: "/icons/run.png",
+			action: "skills",
+		},
+		{ label: "About Me", iconPath: "/icons/about.png", action: "about" },
 	];
 
 	return (
@@ -22,7 +30,7 @@ export default function StartMenu({ isOpen, onClose, onOpen }) {
 
 			{/* Start Menu */}
 			<div
-				className="fixed bottom-[85px] left-[34px] bg-[#c0c0c0] z-50 w-56"
+				className="fixed bottom-[48px] left-0 bg-[#c0c0c0] z-50 w-56"
 				style={{
 					border: "2px solid #dfdfdf",
 					boxShadow:
@@ -51,7 +59,8 @@ export default function StartMenu({ isOpen, onClose, onOpen }) {
 								onClose();
 							}}
 						>
-							<span className="text-lg">{item.icon}</span>
+							{/* ICON FIX: Switched to <img> tag */}
+							<img src={item.iconPath} className="w-4 h-4" alt="" />
 							<span className="text-xs font-bold">{item.label}</span>
 						</div>
 					))}
@@ -62,7 +71,8 @@ export default function StartMenu({ isOpen, onClose, onOpen }) {
 
 				{/* Shutdown option */}
 				<div className="px-2 py-2 hover:bg-[#000080] hover:text-white cursor-pointer flex items-center gap-3 transition-colors">
-					<span className="text-lg">🔌</span>
+					{/* ICON FIX: Switched to <img> tag */}
+					<img src="/icons/shutdown.png" className="w-4 h-4" alt="" />
 					<span className="text-xs font-bold">Shut Down...</span>
 				</div>
 			</div>

@@ -1,13 +1,11 @@
-// ============================================
-// TASKBAR COMPONENT
-// ============================================
-import React, { useEffect, useMemo, useState } from "react";
+// src/components/Taskbar.jsx
+import React, { useEffect, useState } from "react";
 
 export default function Taskbar({
 	onStart,
 	wins,
 	onToggle,
-	onMinimize,
+	onMinimize, // still required if windows can be minimized
 	onClose,
 }) {
 	const [time, setTime] = useState(new Date());
@@ -62,23 +60,9 @@ export default function Taskbar({
 					>
 						<span className="flex-1 text-left">{w.title}</span>
 						<div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
-							<button
-								className="w-5 h-5 flex items-center justify-center text-xs font-bold hover:bg-black/20"
-								style={{
-									border: "1px solid #dfdfdf",
-									boxShadow:
-										"inset 1px 1px 0 rgba(255,255,255,0.5), inset -1px -1px 0 rgba(0,0,0,0.5)",
-								}}
-								onClick={(e) => {
-									e.stopPropagation();
-									onMinimize(w.id);
-								}}
-								title="Minimize"
-							>
-								_
-							</button>
-							<button
-								className="w-5 h-5 flex items-center justify-center text-xs font-bold hover:bg-red-700/80"
+							{/* REMOVED MINIMIZE BUTTON HERE */}
+							<div
+								className="w-5 h-5 flex items-center justify-center text-xs font-bold hover:bg-red-700/80 cursor-pointer"
 								style={{
 									border: "1px solid #dfdfdf",
 									boxShadow:
@@ -91,7 +75,7 @@ export default function Taskbar({
 								title="Close"
 							>
 								×
-							</button>
+							</div>
 						</div>
 					</button>
 				))}

@@ -1,29 +1,47 @@
-import React, { useEffect, useMemo, useState } from "react";
+// src/components/Win95OS.jsx
+import React, {
+	useCallback,
+	useEffect, // Keep useEffect for general component lifecycle, but remove the problematic call
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import WindowFrame from "./WindowFrame.jsx";
 import Taskbar from "./Taskbar.jsx";
 import StartMenu from "./StartMenu.jsx";
 
-// ============================================
-// MAIN WIN95OS COMPONENT
-// ============================================
+// Existing app windows
+import ProjectsWindow from "./apps/ProjectsWindow.jsx";
+import ResumeWindow from "./apps/ResumeWindow.jsx";
+import SkillsTerminal from "./apps/SkillsTerminal.jsx";
+
 export default function Win95OS() {
 	const [wins, setWins] = useState([]);
 	const [zTop, setZTop] = useState(10);
 	const [startOpen, setStartOpen] = useState(false);
 	const [selectedIcon, setSelectedIcon] = useState(null);
 	const [contextMenu, setContextMenu] = useState(null);
+	const desktopRef = useRef(null);
+
 	const isMobile = useMemo(
 		() => window.matchMedia("(max-width: 768px)").matches,
 		[]
 	);
 
-	function focus(id) {
-		setWins((w) =>
-			w.map((x) => (x.id === id ? { ...x, z: zTop + 1, minimized: false } : x))
-		);
-		setZTop((z) => z + 1);
-		setSelectedIcon(null);
-	}
+	/**
+	 * Focus a window: bring to front and unminimize.
+	 */
+	const focus = useCallback(
+		(id) => {
+			let newZ = zTop + 1;
+			setWins((w) =>
+				w.map((x) => (x.id === id ? { ...x, z: newZ, minimized: false } : x))
+			);
+			setZTop(newZ);
+			setSelectedIcon(null);
+		},
+		[zTop]
+	);
 
 	function closeWin(id) {
 		setWins((w) => w.filter((x) => x.id !== id));
@@ -33,126 +51,83 @@ export default function Win95OS() {
 		setWins((w) => w.map((x) => (x.id === id ? { ...x, minimized: true } : x)));
 	}
 
-	function open(kind) {
-		const id = `${kind}-${Math.random().toString(36).slice(2, 7)}`;
-		const titles = {
-			resume: "📄 Documents — Résumé",
-			projects: "💾 My Computer",
-			skills: "⚙️ Run — Skills Terminal",
-			about: "ℹ️ About Me",
-		};
+	const open = useCallback(
+		(kind) => {
+			const id = `${kind}-${Math.random().toString(36).slice(2, 7)}`;
 
-		const contentMap = {
-			resume: (
-				<div className="text-sm text-gray-800">
-					<h2 className="font-bold mb-2">Resume</h2>
-					<p className="mb-2">Your resume content goes here</p>
-					<p className="text-xs text-gray-600">
-						Click to download your full resume
-					</p>
-				</div>
-			),
-			projects: (
-				<div className="text-sm text-gray-800">
-					<h2 className="font-bold mb-2">My Computer</h2>
-					<div className="space-y-1">
-						<div className="flex items-center gap-2 p-1 hover:bg-white/50 cursor-pointer">
-							<span>💾</span> <span>Local Disk (C:)</span>
-						</div>
-						<div className="flex items-center gap-2 p-1 hover:bg-white/50 cursor-pointer">
-							<span>📁</span> <span>Projects</span>
-						</div>
-						<div className="flex items-center gap-2 p-1 hover:bg-white/50 cursor-pointer">
-							<span>📁</span> <span>Documents</span>
-						</div>
-					</div>
-				</div>
-			),
-			skills: (
-				<div className="text-sm text-gray-800 font-mono">
-					<div className="text-green-700 mb-2">
-						C:\Users\Developer\Skills&gt;
-					</div>
-					<p className="mb-1">• JavaScript / React</p>
-					<p className="mb-1">• Python / Backend</p>
-					<p className="mb-1">• Full Stack Development</p>
-					<p className="mb-1">• UI/UX Design</p>
-					<div className="mt-4 text-green-700">
-						C:\Users\Developer\Skills&gt;_
-					</div>
-				</div>
-			),
-			about: (
-				<div className="text-sm text-gray-800">
-					<h2 className="font-bold mb-2">About Me</h2>
-					<p className="mb-2">
-						Welcome to my Windows 95 inspired portfolio! This retro-themed
-						website showcases my projects and skills in a fun, nostalgic way.
-					</p>
-					<p className="text-xs text-gray-600">
-						Built with React, Tailwind CSS, and a lot of nostalgia ✨
-					</p>
-				</div>
-			),
-		};
+			const title =
+				kind === "resume"
+					? "Documents — Résumé"
+					: kind === "projects"
+					? "My Computer — Projects"
+					: kind === "skills"
+					? "Run — Skills Terminal"
+					: kind === "about"
+					? "About Me"
+					: "Window";
 
-		const base = {
-			kind,
-			title: titles[kind] || "New Window",
-			defaultSize: isMobile
-				? { width: "100%", height: "100%" }
-				: { width: 620, height: 420 },
-			defaultPos: isMobile
-				? { x: 0, y: 0 }
-				: {
-						x: 80 + ((wins.length * 24) % 200),
-						y: 60 + ((wins.length * 18) % 160),
-				  },
-			content: contentMap[kind] || null,
-		};
+			const base = {
+				kind,
+				title,
+				defaultSize: isMobile
+					? { width: "100vw", height: "90vh" }
+					: { width: 620, height: 420 },
+				defaultPos: isMobile
+					? { x: 0, y: 0 }
+					: {
+							// Using wins.length here is okay because it's only read when a new window is opened
+							x: 80 + (((wins.length + 1) * 24) % 200),
+							y: 60 + (((wins.length + 1) * 18) % 160),
+					  },
+			};
 
-		setWins((w) => [...w, { id, z: zTop + 1, minimized: false, ...base }]);
-		setZTop((z) => z + 1);
-		setSelectedIcon(null);
-		setContextMenu(null);
-	}
+			const newZ = zTop + 1;
+			setWins((w) => [...w, { id, z: newZ, minimized: false, ...base }]);
+			setZTop(newZ);
+			setSelectedIcon(null);
+			setContextMenu(null);
+		},
+		[isMobile, wins.length, zTop]
+	);
 
+	// Desktop icons (use your existing PNGs)
 	const icons = [
 		{
 			id: "my-computer",
 			label: "My Computer",
-			icon: "💾",
+			src: "/icons/my-computer.png",
 			onOpen: () => open("projects"),
 		},
 		{
 			id: "documents",
 			label: "Documents",
-			icon: "📄",
+			src: "/icons/documents.png",
 			onOpen: () => open("resume"),
 		},
 		{
 			id: "run",
 			label: "Skills Terminal",
-			icon: "⚙️",
+			src: "/icons/run.png",
 			onOpen: () => open("skills"),
 		},
 		{
 			id: "about",
 			label: "About Me",
-			icon: "ℹ️",
+			src: "/icons/about.png",
 			onOpen: () => open("about"),
 		},
 		{
 			id: "recycle",
 			label: "Recycle Bin",
-			icon: "🗑️",
+			src: "/icons/recycle.png",
 			onOpen: () => {},
 		},
 	];
 
-	useEffect(() => {
-		open("projects");
-	}, []);
+	// FIX: Removed the useEffect hook that automatically opened a window on mount.
+	// useEffect(() => {
+	// 	open("projects");
+	// }, [open]);
 
 	const handleDesktopClick = () => {
 		setSelectedIcon(null);
@@ -164,17 +139,31 @@ export default function Win95OS() {
 		setContextMenu({ x: e.clientX, y: e.clientY });
 	};
 
+	/**
+	 * Taskbar onToggle handler.
+	 */
+	const handleTaskbarToggle = useCallback(
+		(id) => {
+			const win = wins.find((w) => w.id === id);
+			if (win && win.minimized) {
+				focus(id); // Un-minimize and bring to front
+			} else if (win) {
+				minimize(id); // Just minimize
+			}
+		},
+		[wins, focus]
+	);
+
 	return (
 		<div
-			className="relative w-full h-full select-none overflow-hidden"
+			ref={desktopRef}
+			className="relative w-screen h-screen select-none overflow-hidden bg-cover"
+			style={{ backgroundImage: "url(/wallpaper.png)" }}
 			onContextMenu={handleContextMenu}
 			onClick={handleDesktopClick}
 		>
-			{/* Wallpaper */}
-			<img src="/wallpaper.png" className="absolute inset-0" />
-
 			{/* Desktop icons */}
-			<div className="absolute z-10 top-4 left-4 right-4 bottom-12 grid grid-cols-[repeat(auto-fill,80px)] gap-6 content-start pointer-events-auto">
+			<div className="absolute z-10 top-4 left-4 right-4 bottom-12 grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,80px)] gap-6 content-start pointer-events-auto">
 				{icons.map((ic) => (
 					<div
 						key={ic.id}
@@ -193,7 +182,12 @@ export default function Win95OS() {
 						}}
 						title={ic.label}
 					>
-						<div className="text-3xl">{ic.icon}</div>
+						<img
+							src={ic.src}
+							alt={ic.label}
+							className="w-12 h-12 object-contain"
+							onError={(e) => (e.target.src = "/fallback-icon.png")}
+						/>
 						<div className="text-xs text-white text-center leading-tight truncate w-full font-medium">
 							{ic.label}
 						</div>
@@ -201,7 +195,7 @@ export default function Win95OS() {
 				))}
 			</div>
 
-			{/* Windows in work area */}
+			{/* Windows area (kept above taskbar) */}
 			<div className="workarea absolute inset-x-0 top-0 bottom-12 pointer-events-auto">
 				{wins.map((w) => (
 					<WindowFrame
@@ -212,7 +206,21 @@ export default function Win95OS() {
 						onClose={() => closeWin(w.id)}
 						onMinimize={() => minimize(w.id)}
 					>
-						{w.content}
+						{/* Use existing components based on window kind */}
+						{w.kind === "projects" && <ProjectsWindow openDetail={() => {}} />}
+						{w.kind === "resume" && <ResumeWindow />}
+						{w.kind === "skills" && <SkillsTerminal />}
+						{w.kind === "about" && (
+							<div className="text-sm text-gray-800 space-y-2 p-3">
+								<h3 className="font-bold">About Me</h3>
+								<p>
+									Welcome to my **Windows 95–inspired portfolio**. Built with
+									React + Tailwind, featuring a retro OS window manager for
+									projects, résumé, and skills.
+								</p>
+							</div>
+						)}
+						{/* If using the PDF viewer: {w.kind === "resumePdf" && <ResumePDFViewer />} */}
 					</WindowFrame>
 				))}
 			</div>
@@ -221,19 +229,9 @@ export default function Win95OS() {
 			<Taskbar
 				onStart={() => setStartOpen(!startOpen)}
 				wins={wins}
-				onToggle={(id) =>
-					setWins((w) =>
-						w.map((x) =>
-							x.id === id ? { ...x, minimized: !x.minimized, z: zTop + 1 } : x
-						)
-					)
-				}
-				onMinimize={(id) =>
-					setWins((w) =>
-						w.map((x) => (x.id === id ? { ...x, minimized: true } : x))
-					)
-				}
-				onClose={(id) => setWins((w) => w.filter((x) => x.id !== id))}
+				onToggle={handleTaskbarToggle}
+				onMinimize={minimize}
+				onClose={closeWin}
 			/>
 
 			{/* Start Menu */}
@@ -256,10 +254,16 @@ export default function Win95OS() {
 					}}
 					onClick={(e) => e.stopPropagation()}
 				>
-					<div className="px-4 py-2 hover:bg-[#000080] hover:text-white cursor-pointer">
-						New Folder
+					<div
+						className="px-4 py-2 hover:bg-[#000080] hover:text-white cursor-pointer"
+						onClick={() => open("projects")}
+					>
+						New Window
 					</div>
-					<div className="px-4 py-2 hover:bg-[#000080] hover:text-white cursor-pointer">
+					<div
+						className="px-4 py-2 hover:bg-[#000080] hover:text-white cursor-pointer"
+						onClick={() => window.location.reload()}
+					>
 						Refresh
 					</div>
 					<hr className="my-1 bg-[#808080] h-px border-0" />

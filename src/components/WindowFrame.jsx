@@ -1,9 +1,14 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useState } from "react";
 import { Rnd } from "react-rnd";
 
-// ============================================
-// WINDOW FRAME COMPONENT
-// ============================================
+// Helper function for the Rnd component's Maximize state
+const MAXIMIZED_SIZE = {
+	x: 0,
+	y: 0,
+	width: "100vw", // Use viewport width for full screen
+	height: "calc(100vh - 48px)", // Subtract taskbar height from viewport height
+};
+
 export default function WindowFrame({
 	spec,
 	containerQuery,
@@ -12,22 +17,83 @@ export default function WindowFrame({
 	onMinimize,
 	children,
 }) {
+	// Safety check for the required 'spec' prop
+	if (!spec) return null;
+
 	const [isMaximized, setIsMaximized] = useState(false);
+	// Use state to store position/size when maximizing, so we can restore it
+	const [lastPosition, setLastPosition] = useState({
+		x: spec.defaultPos?.x || 80,
+		y: spec.defaultPos?.y || 60,
+		width: spec.defaultSize?.width || 620,
+		height: spec.defaultSize?.height || 420,
+	});
 
 	if (spec.minimized) return null;
 
-	const defaultSize = spec.defaultSize;
-	const defaultPos = spec.defaultPos;
+	// Determine Rnd props based on maximization state
+	const currentProps = isMaximized
+		? {
+				x: MAXIMIZED_SIZE.x,
+				y: MAXIMIZED_SIZE.y,
+				width: MAXIMIZED_SIZE.width,
+				height: MAXIMIZED_SIZE.height,
+				disableDragging: true,
+				enableResizing: false,
+		  }
+		: {
+				x: lastPosition.x,
+				y: lastPosition.y,
+				width: lastPosition.width,
+				height: lastPosition.height,
+				disableDragging: false,
+				enableResizing: true,
+		  };
+
+	const handleMaximizeToggle = () => {
+		setIsMaximized((prev) => {
+			if (prev) {
+				// Restore to last position and size
+				setLastPosition({
+					x: spec.defaultPos?.x || 80,
+					y: spec.defaultPos?.y || 60,
+					width: spec.defaultSize?.width || 620,
+					height: spec.defaultSize?.height || 420,
+				});
+			} else {
+				// Save current position and size before maximizing
+				setLastPosition({
+					x: currentProps.x,
+					y: currentProps.y,
+					width: currentProps.width,
+					height: currentProps.height,
+				});
+			}
+			return !prev;
+		});
+	};
 
 	return (
 		<Rnd
 			bounds={containerQuery}
-			default={{
-				x: typeof defaultPos.x === "number" ? defaultPos.x : 80,
-				y: typeof defaultPos.y === "number" ? defaultPos.y : 60,
-				width: typeof defaultSize.width === "number" ? defaultSize.width : 620,
-				height:
-					typeof defaultSize.height === "number" ? defaultSize.height : 420,
+			size={{ width: currentProps.width, height: currentProps.height }}
+			position={{ x: currentProps.x, y: currentProps.y }}
+			disableDragging={currentProps.disableDragging}
+			enableResizing={currentProps.enableResizing}
+			onDragStop={(e, data) => {
+				if (!isMaximized) {
+					setLastPosition((prev) => ({ ...prev, x: data.x, y: data.y }));
+				}
+			}}
+			onResizeStop={(e, direction, ref, delta, position) => {
+				if (!isMaximized) {
+					setLastPosition({
+						x: position.x,
+						y: position.y,
+						width: ref.style.width,
+						height: ref.style.height,
+					});
+				}
 			}}
 			minWidth={360}
 			minHeight={220}
@@ -55,7 +121,6 @@ export default function WindowFrame({
 							"inset 1px 1px 0 rgba(255,255,255,0.3), inset -1px -1px 0 rgba(0,0,0,0.3)",
 					}}
 				>
-					{/* Title */}
 					<div className="flex items-center gap-2 min-w-0">
 						<span className="text-xs font-bold leading-none truncate">
 							{spec.title}
@@ -82,7 +147,7 @@ export default function WindowFrame({
 							_
 						</button>
 
-						{/* Maximize */}
+						{/* Maximize / Restore */}
 						<button
 							className="w-6 h-6 flex items-center justify-center text-white hover:bg-black/20 active:bg-black/40 transition-colors font-bold"
 							style={{
@@ -93,11 +158,11 @@ export default function WindowFrame({
 							onMouseDown={(e) => e.stopPropagation()}
 							onClick={(e) => {
 								e.stopPropagation();
-								setIsMaximized(!isMaximized);
+								handleMaximizeToggle();
 							}}
-							title="Maximize"
+							title={isMaximized ? "Restore" : "Maximize"}
 						>
-							□
+							{isMaximized ? "❐" : "□"}
 						</button>
 
 						{/* Close */}
