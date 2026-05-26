@@ -1,5 +1,3 @@
-// src/data.js
-
 export const desktopIcons = [
   { id: 'streaming', label: 'Free Streaming', icon: '📺' },
   { id: 'devtools', label: 'Dev Tools', icon: '🛠️' },
@@ -25,18 +23,14 @@ export const windowsData = {
       {
         section: "📽️ Movies & TV",
         links: [
-          { name: "Soap2day", desc: "Free movies & series. No account.", url: "https://www.soap2day.ac", icon: "🎬" },
-          { name: "FMovies", desc: "Huge library. HD quality.", url: "https://fmovies.ps", icon: "🎥" },
-          { name: "Cineb", desc: "Clean UI, fast streams.", url: "https://www.cineb.rs", icon: "🍿" },
-          { name: "LookMovie", desc: "High quality, subtitles included.", url: "https://lookmovie2.to", icon: "👁️" },
+          { name: "FMovies", desc: "Large library. Use trusted mirror only.", url: "https://fmovies.gd", icon: "🍿" },
+          { name: "Filma24", desc: "Me Titra Shqip", url: "https://filmametitra.net", icon: "🇦🇱" },
         ]
       },
       {
-        section: "📡 Live TV & Anime",
+        section: "📡 Anime & Niche",
         links: [
-          { name: "Pluto TV", desc: "Free legal live TV channels.", url: "https://www.pluto.tv", icon: "📡" },
-          { name: "Crunchyroll (free tier)", desc: "Legal anime, ad-supported.", url: "https://www.crunchyroll.com", icon: "⚡" },
-          { name: "9anime", desc: "Full anime library, subbed.", url: "https://9anime.to", icon: "🌸" },
+          { name: "Aniwatch", desc: "Free, legal, no signup.", url: "https://aniwatch.co.at", icon: "🎭" },
         ]
       }
     ]
@@ -56,6 +50,7 @@ export const windowsData = {
           { name: "Excalidraw", desc: "Whiteboard for system design.", url: "https://excalidraw.com", icon: "✏️" },
           { name: "Regex101", desc: "Test and debug regex live.", url: "https://regex101.com", icon: "🔍" },
           { name: "Transform.tools", desc: "Convert JSON, SVG, CSS and more.", url: "https://transform.tools", icon: "🔄" },
+          { name: "Cobalt.tools", desc: "Download from YouTube, TikTok, IG. No ads.", url: "https://cobalt.tools", icon: "⬇️" },
         ]
       },
       {
@@ -86,8 +81,9 @@ export const windowsData = {
       {
         section: "🎬 Video Editing",
         links: [
-          { name: "DaVinci Resolve", desc: "Professional. Completely free.", url: "https://www.davinciresolve.com", icon: "🎞️" },
+          { name: "DaVinci Resolve", desc: "Professional. Completely free.", url: "https://www.blackmagicdesign.com/products/davinciresolve", icon: "🎞️" },
           { name: "Kdenlive", desc: "Open-source, lightweight.", url: "https://kdenlive.org", icon: "🎬" },
+          { name: "CapCut (web)", desc: "Fast edits, trending templates.", url: "https://www.capcut.com", icon: "✂️" },
         ]
       },
       {
@@ -95,6 +91,7 @@ export const windowsData = {
         links: [
           { name: "Audacity", desc: "Free audio editor. Classic.", url: "https://www.audacityteam.org", icon: "🎙️" },
           { name: "LMMS", desc: "Free DAW. FL Studio alternative.", url: "https://lmms.io", icon: "🎹" },
+          { name: "BandLab", desc: "Free DAW in the browser. No install.", url: "https://www.bandlab.com", icon: "🎸" },
         ]
       },
       {
@@ -103,6 +100,7 @@ export const windowsData = {
           { name: "GIMP", desc: "Free Photoshop alternative.", url: "https://www.gimp.org", icon: "🐃" },
           { name: "Inkscape", desc: "Free vector design. Illustrator alt.", url: "https://inkscape.org", icon: "🖊️" },
           { name: "Figma (free tier)", desc: "UI design. Generous free plan.", url: "https://www.figma.com", icon: "🔷" },
+          { name: "Photopea", desc: "Photoshop in the browser. Free.", url: "https://www.photopea.com", icon: "🖼️" },
         ]
       },
       {
@@ -189,6 +187,10 @@ export const windowsData = {
     defaultTop: 80,
     defaultLeft: 240,
     isAbout: true,
+    socialLinks: [
+      { name: "Instagram", desc: "@cplusplusj", url: "https://instagram.com/cplusplusj", icon: "📸" },
+      { name: "SoundCloud", desc: "Beats & music", url: "https://soundcloud.com/cetijunior", icon: "🎵" },
+    ],
     content: []
   }
 };

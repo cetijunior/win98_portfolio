@@ -174,7 +174,7 @@ export default function App() {
           }}
         >
           <div className="logo">
-            CJ<span>++</span> PICKS
+            CJ'S PICKS
             <br />
             <small style={{ fontSize: "0.5em", letterSpacing: "1px", color: "#888" }}>
               cplusplusj · v1.0
@@ -264,10 +264,15 @@ export default function App() {
                   </p>
                   <p style={{ marginTop: "10px" }}>This page gets updated. Bookmark it.</p>
                   <div style={{ marginTop: "12px", borderTop: "1px solid #808080", paddingTop: "8px" }}>
-                    <a className="link-item" href="https://instagram.com/cplusplusj" target="_blank" rel="noopener noreferrer">
-                      <span className="li-ico">📸</span>
-                      <div className="li-info"><span className="li-name">Instagram</span><span className="li-desc">@cplusplusj</span></div>
-                    </a>
+                    {winConfig.socialLinks?.map((link, lidx) => (
+                      <a key={lidx} className="link-item" href={link.url} target="_blank" rel="noopener noreferrer">
+                        <span className="li-ico">{link.icon}</span>
+                        <div className="li-info">
+                          <span className="li-name">{link.name}</span>
+                          <span className="li-desc">{link.desc}</span>
+                        </div>
+                      </a>
+                    ))}
                   </div>
                 </div>
               ) : (
